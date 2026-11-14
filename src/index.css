@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --color-bg: #f6f6f4;
+  --color-surface: #ffffff;
+  --color-muted: #f0efec;
+  --color-line: #e3e2dd;
+  --color-ink: #16161a;
+  --color-ink-2: #55555c;
+  --color-ink-3: #8a8a92;
+  --color-accent: #2a5bd7;
+  --color-accent-2: #1f48b3;
+  --color-accent-bg: #e8eefc;
+  --color-good: #17803d;
+  --color-good-bg: #e6f4ea;
+  --color-warn: #a15c00;
+  --color-warn-bg: #fdf1dc;
+  --color-bad: #c62828;
+  --color-bad-bg: #fbe9e9;
+  --color-info: #0b6e99;
+  --color-info-bg: #e3f2f9;
+  --color-series-1: #2a78d6;
+  --color-series-2: #eb6834;
+  --color-series-3: #1baf7a;
+  --color-series-4: #eda100;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #111113;
+    --color-surface: #1a1a1d;
+    --color-muted: #26262a;
+    --color-line: #33333a;
+    --color-ink: #f0efec;
+    --color-ink-2: #c3c2b7;
+    --color-ink-3: #8d8c86;
+    --color-accent: #5b86f0;
+    --color-accent-2: #7a9ef5;
+    --color-accent-bg: #1e2a4a;
+    --color-good: #4cc274;
+    --color-good-bg: #15301f;
+    --color-warn: #e8a640;
+    --color-warn-bg: #3a2a10;
+    --color-bad: #f07070;
+    --color-bad-bg: #3d1818;
+    --color-info: #5cc0e8;
+    --color-info-bg: #102d3a;
+    --color-series-1: #3987e5;
+    --color-series-2: #d95926;
+    --color-series-3: #199e70;
+    --color-series-4: #c98500;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+    --color-bg: #111113;
+    --color-surface: #1a1a1d;
+    --color-muted: #26262a;
+    --color-line: #33333a;
+    --color-ink: #f0efec;
+    --color-ink-2: #c3c2b7;
+    --color-ink-3: #8d8c86;
+    --color-accent: #5b86f0;
+    --color-accent-2: #7a9ef5;
+    --color-accent-bg: #1e2a4a;
+    --color-good: #4cc274;
+    --color-good-bg: #15301f;
+    --color-warn: #e8a640;
+    --color-warn-bg: #3a2a10;
+    --color-bad: #f07070;
+    --color-bad-bg: #3d1818;
+    --color-info: #5cc0e8;
+    --color-info-bg: #102d3a;
+    --color-series-1: #3987e5;
+    --color-series-2: #d95926;
+    --color-series-3: #199e70;
+    --color-series-4: #c98500;
+    color-scheme: dark;
+  }
+
+body { background: var(--color-bg); color: var(--color-ink); }
