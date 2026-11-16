@@ -26,7 +26,7 @@ export default function Reconciliation() {
 
   return (
     <>
-      <PageHeader title="Validation & reconciliation · Q3 2027" subtitle="Independent tie-outs: CRM Analytics is queried directly; the GL accrual is imported." req="VAL-1 … VAL-7"
+      <PageHeader title="Validation & reconciliation · Q3 2027" subtitle="Replaces hand reconciliation: the frozen Salesforce data is compared automatically with the CRM Analytics totals and the GL accrual. Finance sees only the differences." req="VAL-1 … VAL-7"
         actions={<Button onClick={() => actions.exportEvidence('Reconciliation report Q3 2027 (PDF + CSV)')}>Export reconciliation report</Button>} />
       <Card pad={false}>
         <Table head={['Check', 'Description', 'Expected', 'Actual', 'Δ', 'Result']}>

@@ -3,10 +3,15 @@ import type { ScheduleVersion } from '../data/types'
 import { money } from './ui'
 
 /** Schedule lines for any period. Q3 2027 uses live run lines; earlier periods are scaled from the same client book (mock). */
-export function scheduleLines(s: { payeeId: string; period: string; total: number }) {
+export function scheduleLines(s: { payeeId: string; period: string; total: number; changeSummary?: string; id?: string }) {
   const cur = LINES.filter(l => l.payeeId === s.payeeId)
   const curTotal = payeeTotal(s.payeeId)
-  if (s.period === '2027-Q3') return cur
+  if (s.period === '2027-Q3') {
+    // A reissued version carries an approved adjustment that is not in the run lines yet: show it as its own line.
+    const d = Math.round((s.total - curTotal) * 100) / 100
+    if (!d || !cur.length) return cur
+    return [...cur, { ...cur[0], id: `${s.id ?? 'v'}-adj`, clientId: undefined, piece: 'Adjustment', basis: `Approved adjustment: ${(s.changeSummary ?? '').replace(/^[+−-]\$[\d,.]+: /, '')}`, basisAmount: d, rate: 100, amount: d, archetype: 'E' as const }]
+  }
   const f = curTotal ? s.total / curTotal : 0
   const scaled = cur.filter(l => l.archetype !== 'E').map(l => ({ ...l, amount: Math.round(l.amount * f * 100) / 100, basisAmount: Math.round(l.basisAmount * f * 100) / 100, piece: 'Full quarter' }))
   const diff = Math.round((s.total - scaled.reduce((a, l) => a + l.amount, 0)) * 100) / 100

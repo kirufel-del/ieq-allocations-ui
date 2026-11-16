@@ -144,7 +144,8 @@ export interface Run {
   payeeCount: number
   legacy: boolean
   shadow?: { excelTotal: number; matchedLines: number; totalLines: number; diffs: { payee: string; engine: number; excel: number; cause: string }[] }
-  history: { state: RunState; at: string; by: string }[]
+  history: { state: RunState; at: string; by: string; note?: string }[]
+  returned?: { by: string; at: string; reason: string }
 }
 
 export interface AllocationLine {
@@ -233,6 +234,10 @@ export interface Adjustment {
   reason: string
   status: 'Draft' | 'Approved'
   createdBy: string
+  approvedBy?: string
+  questionId?: string
+  scheduleId?: string
+  outcome?: string
 }
 
 export interface PayrollBatch {
@@ -243,6 +248,8 @@ export interface PayrollBatch {
   generatedAt?: string
   approvedBy?: string
   signedOffBy?: string
+  /** payroll register total minus approved total; non-zero blocks sign-off and payment */
+  mismatch?: number
   rows: number
   total: number
 }

@@ -52,7 +52,7 @@ function SettingsForm() {
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {num('variancePct', 'Variance flag: % vs prior quarter', '%')}
         {num('varianceAbs', 'Variance flag: absolute', 'USD')}
-        {num('glTolerance', 'GL accrual tie-out tolerance', 'USD')}
+        {num('glTolerance', 'GL accrual match tolerance', 'USD')}
         {num('reviewWindowDays', 'Payee review window', 'business days')}
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">

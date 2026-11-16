@@ -60,7 +60,7 @@ export default function Audit() {
           <Card title="Evidence pack per period">
             <Select label="Period" value={period} onChange={setPeriod} options={ALL_PERIODS.slice().reverse().map(p => ({ value: p, label: periodLabel(p) }))} />
             <ul className="mt-4 space-y-2 text-sm text-ink-2">
-              {['Snapshot manifest and source hashes', 'Rules register version and change history', 'Allocation lines with lineage (CSV)', 'Reconciliation report (VAL-7)', 'Exception log with resolutions', 'Approval records (maker/checker)', 'Schedule versions with checksums', 'Delivery and acknowledgment log', 'Payroll file hash and signed tie-out'].map(i => <li key={i} className="flex items-center gap-2">☑ {i}</li>)}
+              {['Snapshot manifest and source hashes', 'Rules register version and change history', 'Allocation lines with lineage (CSV)', 'Reconciliation report (VAL-7)', 'Exception log with resolutions', 'Second-person approval records (maker/checker)', 'Schedule versions with checksums', 'Delivery and acknowledgment log', 'Payroll file hash and signed payroll match check'].map(i => <li key={i} className="flex items-center gap-2">☑ {i}</li>)}
             </ul>
             <div className="mt-4 flex gap-2">
               <Button variant="primary" onClick={() => actions.exportEvidence(`Evidence pack ${periodLabel(period)}`)}>Export evidence pack (ZIP)</Button>

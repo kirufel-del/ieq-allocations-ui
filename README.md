@@ -1,7 +1,7 @@
 # IEQ Allocations — mock web UI
 
-Clickable prototype of the IEQ Allocations Platform described in
-`../IEQ Product v2 - 1 Requirements & Design.md`. Front-end only: all data is
+Clickable prototype of IEQ Allocations, the proposed name for the new platform described in
+`../IEQ Product v4 - 1 Requirements & Design.md` and `../IEQ Memo - Final Options v3.md`. Front-end only: all data is
 deterministic mock data generated in `src/data/mock.ts` and held in memory
 (refresh the page to reset).
 
@@ -22,13 +22,14 @@ The simulated date is 7 Oct 2027. The Q3 2027 run is **Calculated** with 4 block
 
 1. **Maya Chen (preparer)** → Exception queue → resolve EX-3001…3004 (or route to Sales Ops).
 2. Runs → RUN-2027Q3-01 → **Submit for review**. *Approve* is disabled for Maya (segregation of duties).
-3. Switch "Viewing as" to **Daniel Okafor (controller)** → **Approve run**.
+3. Switch "Viewing as" to **Daniel Okafor (controller)** → **Reject and return** with a reason. Back as Maya, the reason shows on the run; resubmit, then as Daniel **Approve run**. The rejected attempt stays in the run history.
 4. Back to Maya → **Generate & publish schedules** → Payroll hand-off → **Generate payroll & AP files**.
-5. **Lena Ford (payroll)** → **Sign tie-out**, then Runs → **Confirm paid**. Daniel can then close the period.
-6. **Payee portal** (impersonate any payee) → view the schedule, **Acknowledge**, or click **Ask** on a line.
-7. **Priya Raman / Jordan Alvarez** → Rules register → Changes: approve or reject; you cannot approve your own change.
-8. **Rosa Singh (auditor)** → read-only audit log, maker/checker approvals, evidence export.
-9. **Sam Ito (admin)** → integration health, thresholds, calendar, templates, users and roles.
+5. **Payee portal** (impersonate any payee) → view the schedule, **Acknowledge**, or click **Ask** on a line.
+6. **Maya** → Payee questions → **Payee is right: draft adjustment**. **Daniel** → Adjustments → **Approve**. The payee now sees version 2 with a note of what changed; version 1 stays viewable.
+7. **Lena Ford (payroll)** → optionally **Simulate payroll mismatch** (sign-off and payment are blocked) → **Re-check after payroll fix** → **Sign payroll match check**, then Runs → **Confirm paid**. Daniel can then close the period.
+8. **Priya Raman / Jordan Alvarez** → Rules register → Changes: approve or reject; you cannot approve your own change.
+9. **Rosa Singh (auditor)** → read-only audit log, maker/checker approvals, evidence export.
+10. **Sam Ito (admin)** → integration health, thresholds, calendar, templates, users and roles.
 
 Every action appends an entry to the audit log.
 

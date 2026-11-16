@@ -29,6 +29,9 @@ export default function PayeePortal() {
         <p className="text-sm text-ink-2">Your profit-share schedules, history and questions. Only you can see this information.</p>
       </div>
 
+      {current && current.version > 1 && !current.ack && (
+        <div className="mb-3"><Note tone="info"><b>Version {current.version} replaces version {current.version - 1}.</b> {current.changeSummary ?? 'See the note on the schedule for what changed.'} Earlier versions stay in your history.</Note></div>
+      )}
       {current && !current.ack && (
         <div className="mb-6"><Note tone="warn"><b className="inline-flex items-center gap-1"><Bell size={13} /> Your {periodLabel(current.period)} schedule is ready.</b> Please review and acknowledge within {settingsWindow} business days. If you do nothing it is deemed accepted, without waiving later corrections.</Note></div>
       )}
@@ -90,7 +93,7 @@ export default function PayeePortal() {
       <Modal open={askLine !== null} onClose={() => setAskLine(null)} title={askLine ? `Question about: ${askLine}` : 'Ask Finance a question'}>
         <form onSubmit={e => { e.preventDefault(); if (!viewing || !text.trim()) return; actions.askQuestion(viewing.id, payee.id, askLine ? `Question on ${askLine}` : text.trim().slice(0, 60), text.trim(), askLine || undefined); setText(''); setAskLine(null) }}>
           <textarea autoFocus rows={4} value={text} onChange={e => setText(e.target.value)} placeholder="What looks wrong or unclear?" className="w-full rounded-lg border border-line bg-surface p-2 text-sm outline-none focus:border-accent" />
-          <p className="mt-2 text-xs text-ink-3">Finance answers within 3 business days. If a correction is needed you'll receive a new version with a change summary.</p>
+          <p className="mt-2 text-xs text-ink-3">Finance answers within 3 business days. If a correction is needed, a second person approves it and you receive a new version with a note of what changed. Your earlier version stays viewable.</p>
           <div className="mt-3 flex justify-end"><Button type="submit" variant="primary" disabled={!text.trim()}>Send</Button></div>
         </form>
       </Modal>

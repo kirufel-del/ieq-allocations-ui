@@ -80,8 +80,8 @@ function useProvideApp() {
     readOnly: role === 'auditor',
   }
 
-  const setRunState = (runId: string, state: RunState, extra: Partial<Run> = {}) => (d: DB) => ({
-    runs: d.runs.map(r => r.id === runId ? { ...r, ...extra, state, history: [...r.history, { state, at: now(), by: user.id }] } : r),
+  const setRunState = (runId: string, state: RunState, extra: Partial<Run> = {}, note?: string) => (d: DB) => ({
+    runs: d.runs.map(r => r.id === runId ? { ...r, ...extra, state, history: [...r.history, { state, at: now(), by: user.id, note }] } : r),
   })
 
   const actions = {
@@ -91,9 +91,9 @@ function useProvideApp() {
     routeException: (id: string) => mutate(d => ({ exceptions: d.exceptions.map(e => e.id === id ? { ...e, owner: 'u5', status: 'Routed' } : e) }), ['Exception routed to Sales Ops', id, 'Fix at source in Salesforce'], `${id} routed to Sales Ops`),
     commentException: (id: string, text: string) => mutate(d => ({ exceptions: d.exceptions.map(e => e.id === id ? { ...e, comments: [...e.comments, { by: user.id, at: now(), text }] } : e) }), ['Comment added', id, text]),
 
-    submitRun: (runId: string) => mutate(setRunState(runId, 'In review', { submittedAt: now() }), ['Run submitted for review', runId, 'Maker step complete'], 'Run submitted for review'),
-    approveRun: (runId: string) => mutate(setRunState(runId, 'Approved', { approver: user.id, approvedAt: now() }), ['Run approved', runId, 'Checker approval; run locked'], 'Run approved and locked'),
-    rejectRun: (runId: string, reason: string) => mutate(setRunState(runId, 'Calculated'), ['Run returned to preparer', runId, reason], 'Run returned to preparer'),
+    submitRun: (runId: string, note?: string) => mutate(setRunState(runId, 'In review', { submittedAt: now(), returned: undefined }, note ? `Submitted: ${note}` : 'Submitted for second-person approval'), ['Run submitted for review', runId, note || 'Preparer step complete'], 'Run submitted for review'),
+    approveRun: (runId: string) => mutate(setRunState(runId, 'Approved', { approver: user.id, approvedAt: now() }, 'Approved by a second person; run locked'), ['Run approved', runId, 'Second-person approval; run locked'], 'Run approved and locked'),
+    rejectRun: (runId: string, reason: string) => mutate(setRunState(runId, 'Calculated', { returned: { by: user.id, at: now(), reason } }, `Rejected and returned to preparer: ${reason}`), ['Run rejected and returned to preparer', runId, reason], 'Run returned to the preparer with your reason'),
     publishRun: (runId: string) => mutate(d => {
       const run = d.runs.find(r => r.id === runId)!
       const newSchedules: ScheduleVersion[] = M.PAYEES.map((p, i) => ({
@@ -109,7 +109,9 @@ function useProvideApp() {
       const b: PayrollBatch = { id: `PAY-${run.period.replace('-', '')}`, runId, format: d.settings.payrollFormat, fileHash: 'sha256:' + hex(24), generatedAt: now(), approvedBy: run.approver, rows: run.payeeCount, total: run.total }
       return { payroll: [b, ...d.payroll.filter(x => x.id !== b.id)] }
     }, ['Payroll file generated', runId, 'From approved totals only'], 'Payroll file generated'),
-    signOffPayroll: (batchId: string) => mutate(d => ({ payroll: d.payroll.map(b => b.id === batchId ? { ...b, signedOffBy: user.id } : b) }), ['Tie-out signed', batchId, 'Second-person sign-off'], 'Tie-out signed off'),
+    signOffPayroll: (batchId: string) => mutate(d => ({ payroll: d.payroll.map(b => b.id === batchId ? { ...b, signedOffBy: user.id } : b) }), ['Payroll match check signed', batchId, 'Second-person sign-off: payroll equals approved totals'], 'Payroll match check signed off'),
+    simulatePayrollMismatch: (batchId: string) => mutate(d => ({ payroll: d.payroll.map(b => b.id === batchId ? { ...b, mismatch: 1250, signedOffBy: undefined } : b) }), ['Payroll mismatch found', batchId, 'Payroll register is $1,250.00 above approved totals; payroll stopped'], 'Mismatch found: payroll is stopped until totals match'),
+    recheckPayroll: (batchId: string) => mutate(d => ({ payroll: d.payroll.map(b => b.id === batchId ? { ...b, mismatch: undefined } : b) }), ['Payroll match re-checked', batchId, 'Payroll corrected its register; totals now match'], 'Re-checked: payroll now matches approved totals'),
     markPaid: (runId: string) => mutate(setRunState(runId, 'Paid'), ['Run marked paid', runId, 'Payroll confirmation received'], 'Run marked paid'),
     closeRun: (runId: string) => mutate(setRunState(runId, 'Closed'), ['Run closed', runId, 'Period closed'], 'Period closed'),
 
@@ -121,7 +123,33 @@ function useProvideApp() {
 
     proposeRule: (c: Omit<RuleChange, 'id' | 'author' | 'createdAt' | 'status'>) => mutate(d => ({ ruleChanges: [{ ...c, id: `RC-${130 + d.ruleChanges.length}`, author: user.id, createdAt: now().slice(0, 10), status: 'Pending' }, ...d.ruleChanges] }), ['Rule change proposed', M.payeeName(c.payeeId), c.summary], 'Rule change submitted for approval'),
     decideRule: (id: string, approve: boolean) => mutate(d => ({ ruleChanges: d.ruleChanges.map(c => c.id === id ? { ...c, status: approve ? 'Approved' : 'Rejected', approver: user.id, decidedAt: now().slice(0, 10) } : c) }), [approve ? 'Rule change approved' : 'Rule change rejected', id, ''], approve ? `${id} approved` : `${id} rejected`),
-    approveAdjustment: (id: string) => mutate(d => ({ adjustments: d.adjustments.map(a => a.id === id ? { ...a, status: 'Approved' } : a) }), ['Adjustment approved', id, '']),
+    draftAdjustment: (questionId: string, amount: number, reason: string) => mutate(d => {
+      const q = d.questions.find(x => x.id === questionId)!
+      const sch = d.schedules.find(x => x.id === q.scheduleId)
+      const id = `ADJ-${String(31 + d.adjustments.length).padStart(3, '0')}`
+      const adj: Adjustment = { id, runId: sch?.runId ?? 'RUN-2027Q3-01', payeeId: q.payeeId, originalRunId: sch?.runId ?? 'RUN-2027Q3-01', amount, reason: `${reason} (${q.id})`, status: 'Draft', createdBy: user.id, questionId: q.id, scheduleId: q.scheduleId }
+      return {
+        adjustments: [adj, ...d.adjustments],
+        questions: d.questions.map(x => x.id === questionId ? { ...x, adjustmentId: id, status: 'Answered', messages: [...x.messages, { by: user.id, at: now(), text: `Thanks, you're right. We've drafted adjustment ${id} for ${amount < 0 ? '−' : ''}$${Math.abs(amount).toFixed(2)}. A second person must approve it, then you'll receive a new version of your schedule showing what changed.` }] } : x),
+      }
+    }, ['Adjustment drafted from payee question', questionId, reason], 'Adjustment drafted; awaiting second-person approval'),
+    approveAdjustment: (id: string) => mutate(d => {
+      const a = d.adjustments.find(x => x.id === id)!
+      const cur = a.scheduleId ? d.schedules.find(x => x.id === a.scheduleId) : undefined
+      const live = cur && (cur.supersededBy ? d.schedules.find(x => x.payeeId === cur.payeeId && x.period === cur.period && !x.supersededBy) : cur)
+      const run = live ? d.runs.find(r => r.id === live.runId) : undefined
+      const payrollBuilt = !!run && d.payroll.some(b => b.runId === run.id)
+      if (!live || !run || run.state !== 'Published' || payrollBuilt) {
+        return { adjustments: d.adjustments.map(x => x.id === id ? { ...x, status: 'Approved' as const, approvedBy: user.id, outcome: a.questionId ? 'Rolls into next quarter as a true-up (payroll already run)' : 'Included in the next run' } : x) }
+      }
+      const nv: ScheduleVersion = { ...live, id: live.id.replace(/-v\d+$/, '') + `-v${live.version + 1}`, version: live.version + 1, total: Math.round((live.total + a.amount) * 100) / 100, checksum: 'sha256:' + hex(16), publishedAt: now(), supersededBy: undefined, ack: undefined, changeSummary: `${a.amount < 0 ? '−' : '+'}$${Math.abs(a.amount).toFixed(2)}: ${a.reason} (${a.id}, approved by ${M.userName(user.id)})` }
+      return {
+        adjustments: d.adjustments.map(x => x.id === id ? { ...x, status: 'Approved' as const, approvedBy: user.id, outcome: `Reissued as v${nv.version}` } : x),
+        schedules: [nv, ...d.schedules.map(x => x.id === live.id ? { ...x, supersededBy: nv.id } : x)],
+        runs: d.runs.map(r => r.id === run.id ? { ...r, total: Math.round((r.total + a.amount) * 100) / 100 } : r),
+        questions: d.questions.map(x => x.id === a.questionId ? { ...x, status: 'Resolved' as const, messages: [...x.messages, { by: user.id, at: now(), text: `Adjustment ${a.id} approved. Version ${nv.version} of your schedule is now in the portal, with a note of what changed. Version ${live.version} stays viewable.` }] } : x),
+      }
+    }, ['Adjustment approved', id, 'Second-person approval'], 'Adjustment approved'),
 
     ackSchedule: (id: string) => mutate(d => ({ schedules: d.schedules.map(s => s.id === id ? { ...s, ack: { at: now(), kind: 'Acknowledged' } } : s) }), ['Schedule acknowledged', id, ''], 'Schedule acknowledged'),
     simulateAcks: (period: string) => mutate(d => ({ schedules: d.schedules.map((s, i) => s.period === period && !s.ack && !s.supersededBy && i % 5 !== 0 ? { ...s, ack: { at: now(), kind: 'Acknowledged' } } : s) }), ['Simulated payee activity', period, 'Acknowledgments received'], 'Simulated 3 days of payee acknowledgments'),
