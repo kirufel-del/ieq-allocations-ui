@@ -1,6 +1,6 @@
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import {
-  ArrowLeftRight, BookOpenCheck, Camera, ClipboardCheck, Database, FileText, Gauge, History, Landmark,
+  ArrowLeftRight, BookOpenCheck, CircleHelp, Camera, ClipboardCheck, Database, FileText, Gauge, History, Landmark,
   ListChecks, MessageSquare, PlayCircle, Scale, Settings, ShieldCheck, TriangleAlert, Wallet,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -23,6 +23,7 @@ import PayeePortal from './pages/PayeePortal'
 import Audit from './pages/Audit'
 import Admin from './pages/Admin'
 import Migration from './pages/Migration'
+import KnowledgeBase from './pages/KnowledgeBase'
 
 const FIN: RoleKey[] = ['preparer', 'reviewer']
 interface NavItem { to: string; label: string; icon: ReactNode; roles: RoleKey[]; group: string }
@@ -41,6 +42,7 @@ const NAV: NavItem[] = [
   { to: '/migration', label: 'Migration', icon: <History size={16} />, roles: [...FIN, 'admin', 'auditor'], group: 'Configuration' },
   { to: '/audit', label: 'Audit & evidence', icon: <ShieldCheck size={16} />, roles: ['auditor', 'reviewer', 'admin', 'rules'], group: 'Governance' },
   { to: '/admin', label: 'Administration', icon: <Settings size={16} />, roles: ['admin'], group: 'Governance' },
+  { to: '/kb', label: 'Knowledge base', icon: <CircleHelp size={16} />, roles: [...FIN, 'rules', 'dataowner', 'payroll', 'auditor', 'admin', 'payee'], group: 'Help' },
 ]
 const HOME: Record<RoleKey, string> = { preparer: '/dashboard', reviewer: '/dashboard', rules: '/rules', dataowner: '/exceptions', payee: '/portal', payroll: '/payroll', auditor: '/audit', admin: '/admin' }
 
@@ -90,7 +92,10 @@ export default function App() {
           </div>
           {!isPayee && <span className="ml-2 hidden rounded-full bg-muted px-2.5 py-1 text-xs text-ink-2 md:inline">Current period <b className="text-ink">{periodLabel(CURRENT_PERIOD)}</b> · {currentRun.state}</span>}
         </div>
-        <UserSwitcher />
+        <div className="flex flex-wrap items-center gap-3">
+          {isPayee && <NavLink to={loc.pathname === '/kb' ? '/portal' : '/kb'} className="flex items-center gap-1 text-sm text-accent hover:underline"><CircleHelp size={15} />{loc.pathname === '/kb' ? 'Back to portal' : 'Help'}</NavLink>}
+          <UserSwitcher />
+        </div>
       </header>
 
       <div className="flex">
@@ -138,6 +143,7 @@ export default function App() {
             <Route path="/migration" element={<Guard path="/migration"><Migration /></Guard>} />
             <Route path="/audit" element={<Guard path="/audit"><Audit /></Guard>} />
             <Route path="/admin" element={<Guard path="/admin"><Admin /></Guard>} />
+            <Route path="/kb" element={<KnowledgeBase />} />
             <Route path="/portal" element={isPayee ? <PayeePortal /> : <Navigate to={HOME[user.role]} replace />} />
             <Route path="*" element={<Navigate to={HOME[user.role]} replace />} />
           </Routes>
