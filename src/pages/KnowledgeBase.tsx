@@ -33,7 +33,7 @@ const ARTICLES: Article[] = [
         'Every action is recorded in an immutable audit log, and segregation of duties is enforced: the person who prepares a run cannot approve it.',
       ] },
       { h: 'About this prototype', items: [
-        'All data is mock and deterministic. The prototype shows the platform after Release 3; the quarters and dates on screen are sample data, not plan dates.',
+        'All data is mock and deterministic. The quarters and dates on screen are sample data.',
         'Changes you make (approvals, resolutions, acknowledgments) live in your browser session only. Refresh the page to reset.',
         'Download buttons are illustrative and do not produce real files.',
       ] },
@@ -57,18 +57,6 @@ const ARTICLES: Article[] = [
       'Sam Ito: Platform admin. Settings, calendar, templates, integrations and access.',
     ] }],
     tips: ['Buttons you are not allowed to use are greyed out. Hover over one to see why (usually a segregation-of-duties rule).'],
-  },
-  {
-    id: 'releases', title: 'How the platform rolls out (Releases 1 to 3)', category: 'Getting started', roles: 'all',
-    summary: 'Three releases, one quarterly close apart. Month 1 is the first month after approval.',
-    steps: [
-      { text: 'Release 1, Close 1 (about Month 2): Finance still builds schedules in Excel, then uploads them once. Each becomes a read-only PDF, the folder owner is checked, each payee gets a personal link instead of one email to all, acknowledgments are recorded, and a second person signs the payroll match check.', who: 'Both options' },
-      { text: 'Decision gate (end of Month 3): the Spiff test results and quote are compared with the IEQ Allocations plan.', who: 'Leadership' },
-      { text: 'Release 2, Close 2 (about Month 5): Salesforce data loads automatically and differences from CRM Analytics are flagged. The engine calculates beside Excel; Excel still sets pay.', to: '/reconciliation' },
-      { text: 'Release 3, Close 3 (about Month 8): the engine’s numbers become official, payroll gets a file built from approved totals, and payees get this portal.', to: '/runs' },
-      { text: 'Migration: the latest four quarters load during the build; older quarters follow from Month 9 and never delay go-live.', to: '/migration' },
-    ],
-    tips: ['Every release runs beside the old process for one close, has a Finance go/no-go, and can fall back to Excel.', 'This prototype shows the platform as it would look after Release 3.'],
   },
   {
     id: 'navigation', title: 'Finding your way around', category: 'Getting started', roles: 'all',
